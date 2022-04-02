@@ -241,10 +241,88 @@ public class LongBitHashSet extends AbstractLongSet implements LongSet {
     //    throw new IllegalArgumentException("unknown type");
     //}
 
+    class j$itr2 implements LongIterator {
+        /**
+         * Internal reference of buckets to avoid giving the same answer twice,
+         * violating the assumption of {@link java.util.Set sets}.
+         */
+        private final LongBitBucket[] buckets = LongBitHashSet.this.buckets;
+        // private LongBitBucket rawBucket;
+        private int bucket = -1, bucketIndex, bucketIndexNext, bucketLongs;
+
+        {
+            nextBucket();
+        }
+
+        private LongBitBucket currentBucket() {
+            if (bucket < 0) {
+                return null;
+            }
+            return buckets[bucket];
+        }
+
+        private LongBitBucket nextBucket() {
+            LongBitBucket b = null;
+            int i = bucket;
+            do {
+                if (++i >= buckets.length) {
+                    i = -1;
+                    break;
+                }
+                b = buckets[i];
+            } while (b == null);
+            bucket = i;
+            bucketLongs = 0;
+            // rawBucket = b;
+            if (b != null) {
+                bucketIndex = -1;
+                bucketIndexNext = b.nextIndex(-1);
+            }
+            return b;
+        }
+
+        @Override
+        public long nextLong() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            bucketLongs++;
+            return currentBucket().rawGet(bucketIndex = bucketIndexNext);
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (bucketIndexNext > bucketIndex) {
+                return true;
+            }
+            var bucket = currentBucket();
+            if (bucket == null) {
+                return false;
+            }
+            int next = bucket.nextIndex(bucketIndex);
+            if (next < 0) {
+                bucket = nextBucket();
+                return bucket != null;
+            } else {
+                bucketIndexNext = next;
+            }
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return "j$itr2{" +
+                    "bucket=" + bucket +
+                    ", bucketIndex=" + bucketIndex +
+                    ", bucketIndexNext=" + bucketIndexNext +
+                    ", bucketLongs=" + bucketLongs +
+                    '}';
+        }
+    }
+
     /**
      * Long iterator adapted for the bucket-based approach of the {@link LongBitHashSet}.
      */
-    @TestOnly
     static class j$itr implements LongIterator {
         private final LongBitBucket[] buckets;
         boolean peeked;

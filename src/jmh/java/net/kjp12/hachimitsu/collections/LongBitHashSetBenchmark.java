@@ -75,4 +75,13 @@ public class LongBitHashSetBenchmark {
             bh.consume(itr.nextLong());
         }
     }
+
+    @Benchmark
+    //@Measurement(iterations = 5, time = 60, timeUnit = TimeUnit.SECONDS)
+    public static void itr2(RandData rd, Blackhole bh) {
+        var itr = rd.lbhs.new j$itr2();
+        while (itr.hasNext()) {
+            bh.consume(itr.nextLong());
+        }
+    }
 }
