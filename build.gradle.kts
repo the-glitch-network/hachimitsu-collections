@@ -16,6 +16,14 @@ java {
     withJavadocJar()
 }
 
+sourceSets {
+    create("testapp") {
+        val m = main.get()
+        compileClasspath += m.compileClasspath + m.output
+        runtimeClasspath += m.runtimeClasspath + m.output
+    }
+}
+
 repositories {
     mavenCentral()
 }
@@ -39,6 +47,20 @@ tasks {
     jmhJar { outputs.upToDateWhen { false } }
     jmhCompileGeneratedClasses { outputs.upToDateWhen { false } }
     jmhRunBytecodeGenerator { outputs.upToDateWhen { false } }
+    create<Jar>("testappJar") {
+        archiveClassifier.set("testapp")
+        val testapp by sourceSets
+        from(testapp.output)
+        for (jar in testapp.runtimeClasspath) {
+            if (jar?.extension == "jar") {
+                from(zipTree(jar))
+            } else {
+                from(jar)
+            }
+        }
+        manifest.attributes["Main-Class"] = "net.kjp12.hachimitsu.collections.TestApp"
+        outputs.upToDateWhen { false }
+    }
     withType<JavaCompile> {
         options.encoding = "UTF-8"
         options.isDeprecation = true
