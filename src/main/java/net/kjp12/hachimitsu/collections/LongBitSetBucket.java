@@ -9,6 +9,11 @@ import java.util.Arrays;
 class LongBitSetBucket extends LongBitBucket {
     final long[] words;
 
+    LongBitSetBucket(long relative) {
+        super(relative, 0);
+        this.words = new long[4];
+    }
+
     LongBitSetBucket(LongBitBucket bucket) {
         super(bucket.relative(), bucket.size());
         copy0(bucket, this.words = new long[4]);
